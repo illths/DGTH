@@ -105,26 +105,31 @@
             text-align: center;
             margin-top: 50px;
         }
+        .math-result {
+            font-size: 24px;
+            color: #4caf50;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
     <div class="workspace">
         <h1>DGTH</h1>
-        <div class="subtitle">Internal Local Reference & Study Dashboard</div>
+        <div class="subtitle">Internal Local Reference & Smart Utility Dashboard</div>
         
         <div class="search-area">
-            <input type="text" id="queryInput" class="search-input" placeholder="Search built-in subject library (e.g. computer, algebra, essay)..." autocomplete="off">
-            <button onclick="executeLocalSearch()" class="search-button">Search</button>
+            <input type="text" id="queryInput" class="search-input" placeholder="Ask a question, enter math (e.g. 2+1), or search keywords..." autocomplete="off">
+            <button onclick="processSmartSearch()" class="search-button">Search</button>
         </div>
 
         <div id="resultsContainer" class="results-box">
-            <p class="status-msg">Results container empty. Enter a keywords query above to filter native library assets.</p>
+            <p class="status-msg">Results container empty. Enter a query above to calculate or filter reference assets.</p>
         </div>
     </div>
 
     <script>
-        // Local internal database containing articles completely embedded into the page
+        // Local informational index
         const localDatabase = [
             {
                 title: "Computer Systems & Hardware",
@@ -150,12 +155,13 @@
 
         document.getElementById('queryInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
-                executeLocalSearch();
+                processSmartSearch();
             }
         });
 
-        function executeLocalSearch() {
-            const query = document.getElementById('queryInput').value.trim().toLowerCase();
+        function processSmartSearch() {
+            const rawQuery = document.getElementById('queryInput').value.trim();
+            const query = rawQuery.toLowerCase();
             const container = document.getElementById('resultsContainer');
             
             if (!query) {
@@ -163,21 +169,56 @@
                 return;
             }
 
-            container.innerHTML = '<p class="status-msg">Searching internal library indexes...</p>';
+            container.innerHTML = '<p class="status-msg">Processing query...</p>';
 
-            // Filter the database array instantly without hitting any network connection
+            // 1. CHECK FOR MATH EQUATIONS (e.g. 2+1, 45*3, 10-5)
+            // Regex detects numbers separated by standard math operators
+            const mathRegex = /^[\d\s.+\-*/()]+\$/;
+            if (mathRegex.test(rawQuery) && /[+\-*/]/.test(rawQuery)) {
+                try {
+                    // Evaluate the arithmetic string safely using a Function wrapper
+                    const calculation = new Function(`return ${rawQuery}`)();
+                    
+                    setTimeout(() => {
+                        container.innerHTML = `
+                            <div class="result-item">
+                                <div class="result-title">Math Calculator Utility</div>
+                                <p class="result-snippet">Calculated value for expression: <strong>${rawQuery}</strong></p>
+                                <p class="math-result">= ${calculation}</p>
+                            </div>
+                        `;
+                    }, 150);
+                    return;
+                } catch (e) {
+                    // Fall through if it's an invalid equation string
+                }
+            }
+
+            // 2. CHECK FOR CONVERSATIONAL QUESTIONS (Simple rule-based engine)
+            if (query.startsWith("hello") || query.startsWith("hi")) {
+                setTimeout(() => {
+                    container.innerHTML = `
+                        <div class="result-item">
+                            <div class="result-title">DGTH Assistant</div>
+                            <p class="result-snippet">Hello! I am your completely offline smart utility dashboard. You can type math equations directly into the box, or ask about system topics like "math", "computer", or "essay".</p>
+                        </div>
+                    `;
+                }, 150);
+                return;
+            }
+
+            // 3. FALLBACK: LOCAL ENCYCLOPEDIA DATABASE FILTER
+            // Requires keywords to match closely rather than checking single character subsets globally
             const matchedResults = localDatabase.filter(item => {
-                return item.title.toLowerCase().includes(query) || 
-                       item.snippet.toLowerCase().includes(query) ||
-                       item.keywords.some(keyword => keyword.includes(query));
+                return item.title.toLowerCase() === query || 
+                       item.keywords.some(keyword => keyword === query || (query.length > 2 && keyword.includes(query)));
             });
 
-            // Delay visually for a fraction of a second to mimic an app interface
             setTimeout(() => {
                 container.innerHTML = ''; // Clear status
 
                 if (matchedResults.length === 0) {
-                    container.innerHTML = '<p class="status-msg">No entries found matching that query within the local index database.</p>';
+                    container.innerHTML = '<p class="status-msg">No structured internal entries found matching that exact keyword. Try typing "math", "computer", or a calculation like "2+1".</p>';
                     return;
                 }
 
@@ -190,9 +231,10 @@
                     `;
                     container.appendChild(itemElement);
                 });
-            }, 200);
+            }, 150);
         }
     </script>
 
 </body>
 </html>
+
