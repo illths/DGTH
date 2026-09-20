@@ -111,28 +111,51 @@
 
     <div class="workspace">
         <h1>DGTH</h1>
-        <div class="subtitle">Internal Reference Dashboard & Search Engine</div>
+        <div class="subtitle">Internal Local Reference & Study Dashboard</div>
         
         <div class="search-area">
-            <input type="text" id="queryInput" class="search-input" placeholder="Type a topic to fetch data..." autocomplete="off">
-            <button onclick="executeFetchSearch()" class="search-button">Fetch</button>
+            <input type="text" id="queryInput" class="search-input" placeholder="Search built-in subject library (e.g. computer, algebra, essay)..." autocomplete="off">
+            <button onclick="executeLocalSearch()" class="search-button">Search</button>
         </div>
 
         <div id="resultsContainer" class="results-box">
-            <p class="status-msg">Results container empty. Enter a query above to fetch data into this tab.</p>
+            <p class="status-msg">Results container empty. Enter a keywords query above to filter native library assets.</p>
         </div>
     </div>
 
     <script>
-        // Trigger search when user presses Enter key
+        // Local internal database containing articles completely embedded into the page
+        const localDatabase = [
+            {
+                title: "Computer Systems & Hardware",
+                keywords: ["computer", "pc", "hardware", "cpu", "ram", "technology"],
+                snippet: "A computer system consists of hardware components (CPU, memory, storage, input/output devices) and software. The Central Processing Unit (CPU) executes instructions, while RAM provides volatile working memory for active processes."
+            },
+            {
+                title: "Algebra & Mathematical Functions",
+                keywords: ["math", "algebra", "calculus", "function", "equation"],
+                snippet: "Algebraic expressions utilize variables, constants, and operational symbols to represent relationships. A function maps an input value to exactly one output value, commonly defined as f(x)."
+            },
+            {
+                title: "Essay Structure & Academic Writing",
+                keywords: ["essay", "writing", "english", "thesis", "paragraph"],
+                snippet: "Standard academic essays follow a structured format: an introductory paragraph containing a clear thesis statement, body paragraphs providing evidence and critical analysis, and a conclusion summarizing main arguments."
+            },
+            {
+                title: "Hakuda Techniques Overview",
+                keywords: ["hakuda", "guide", "dgth", "basics"],
+                snippet: "Hakuda is a hand-to-hand combat discipline focusing on physical strikes, blocks, and agility. Training emphasizes core stability, timing, and using an opponent's momentum against them."
+            }
+        ];
+
         document.getElementById('queryInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
-                executeFetchSearch();
+                executeLocalSearch();
             }
         });
 
-        function executeFetchSearch() {
-            const query = document.getElementById('queryInput').value.trim();
+        function executeLocalSearch() {
+            const query = document.getElementById('queryInput').value.trim().toLowerCase();
             const container = document.getElementById('resultsContainer');
             
             if (!query) {
@@ -140,49 +163,36 @@
                 return;
             }
 
-            container.innerHTML = '<p class="status-msg">Fetching data from endpoint... Please wait.</p>';
+            container.innerHTML = '<p class="status-msg">Searching internal library indexes...</p>';
 
-            // CORRECTED URL: Contains the complete, unbroken endpoint parameters for the API call
-            const targetUrl = `https://wikipedia.org{encodeURIComponent(query)}`;
+            // Filter the database array instantly without hitting any network connection
+            const matchedResults = localDatabase.filter(item => {
+                return item.title.toLowerCase().includes(query) || 
+                       item.snippet.toLowerCase().includes(query) ||
+                       item.keywords.some(keyword => keyword.includes(query));
+            });
 
-            fetch(targetUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response failed');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const searchResults = data.query.search;
-                    container.innerHTML = ''; // Clear loading message
+            // Delay visually for a fraction of a second to mimic an app interface
+            setTimeout(() => {
+                container.innerHTML = ''; // Clear status
 
-                    if (searchResults.length === 0) {
-                        container.innerHTML = '<p class="status-msg">No matching data returned for that query.</p>';
-                        return;
-                    }
+                if (matchedResults.length === 0) {
+                    container.innerHTML = '<p class="status-msg">No entries found matching that query within the local index database.</p>';
+                    return;
+                }
 
-                    // Dynamically build and insert the text items into the container layout
-                    searchResults.forEach(item => {
-                        const itemElement = document.createElement('div');
-                        itemElement.className = 'result-item';
-
-                        // Remove raw HTML formatting codes from the response object
-                        const cleanSnippet = item.snippet.replace(/<\/?[^>]+(>|\$)/g, "");
-
-                        itemElement.innerHTML = `
-                            <div class="result-title">${item.title}</div>
-                            <p class="result-snippet">${cleanSnippet}...</p>
-                        `;
-                        container.appendChild(itemElement);
-                    });
-                })
-                .catch(error => {
-                    console.error('Fetch Error:', error);
-                    container.innerHTML = '<p class="status-msg" style="color: #ff5722;">An error occurred while fetching information. Please verify your connection status.</p>';
+                matchedResults.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'result-item';
+                    itemElement.innerHTML = `
+                        <div class="result-title">${item.title}</div>
+                        <p class="result-snippet">${item.snippet}</p>
+                    `;
+                    container.appendChild(itemElement);
                 });
+            }, 200);
         }
     </script>
 
 </body>
 </html>
-
