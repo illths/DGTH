@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "DGTH Study Panel",
+  "version": "1.0.0",
+  "description": "A study side panel: look things up, take notes, make flashcards, and run a focus timer without leaving the page.",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "https://en.wikipedia.org/*",
+    "https://www.wikidata.org/*",
+    "https://api.dictionaryapi.dev/*",
+    "https://api.anthropic.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open DGTH study panel"
+  }
+}
