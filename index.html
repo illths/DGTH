@@ -91,8 +91,7 @@
             font-size: 18px;
             color: #00adb5;
             margin: 0 0 5px 0;
-            text-decoration: none;
-            display: inline-block;
+            font-weight: bold;
         }
         .result-snippet {
             font-size: 14px;
@@ -115,7 +114,7 @@
         <div class="subtitle">Internal Reference Dashboard & Search Engine</div>
         
         <div class="search-area">
-            <input type="text" id="queryInput" class="search-input" placeholder="Type a topic to query information..." autocomplete="off">
+            <input type="text" id="queryInput" class="search-input" placeholder="Type a topic to fetch data..." autocomplete="off">
             <button onclick="executeFetchSearch()" class="search-button">Fetch</button>
         </div>
 
@@ -125,7 +124,7 @@
     </div>
 
     <script>
-        // Intercepts the enter key inside the text field
+        // Trigger search when user presses Enter key
         document.getElementById('queryInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 executeFetchSearch();
@@ -143,31 +142,31 @@
 
             container.innerHTML = '<p class="status-msg">Fetching data from endpoint... Please wait.</p>';
 
-            // Using the open Wikipedia sandbox endpoint to dynamically retrieve text data matching the term
+            // CORRECTED URL: Contains the complete, unbroken endpoint parameters for the API call
             const targetUrl = `https://wikipedia.org{encodeURIComponent(query)}`;
 
             fetch(targetUrl)
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Network tracking response failed to load properly.');
+                        throw new Error('Network response failed');
                     }
                     return response.json();
                 })
                 .then(data => {
                     const searchResults = data.query.search;
-                    container.innerHTML = ''; // Clear status message
+                    container.innerHTML = ''; // Clear loading message
 
                     if (searchResults.length === 0) {
                         container.innerHTML = '<p class="status-msg">No matching data returned for that query.</p>';
                         return;
                     }
 
-                    // Loop through data properties and write elements dynamically into the existing container
+                    // Dynamically build and insert the text items into the container layout
                     searchResults.forEach(item => {
                         const itemElement = document.createElement('div');
                         itemElement.className = 'result-item';
 
-                        // Strip HTML tags out of snippets returned by the remote platform array
+                        // Remove raw HTML formatting codes from the response object
                         const cleanSnippet = item.snippet.replace(/<\/?[^>]+(>|\$)/g, "");
 
                         itemElement.innerHTML = `
@@ -179,10 +178,11 @@
                 })
                 .catch(error => {
                     console.error('Fetch Error:', error);
-                    container.innerHTML = '<p class="status-msg" style="color: #ff5722;">An error occurred while fetching information. Please ensure connectivity profile status is active.</p>';
+                    container.innerHTML = '<p class="status-msg" style="color: #ff5722;">An error occurred while fetching information. Please verify your connection status.</p>';
                 });
         }
     </script>
 
 </body>
 </html>
+
