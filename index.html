@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dummies Guide to Hakuda (DGTH)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #00adb5;
+            margin-bottom: 5px;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+        }
+        p {
+            color: #aaaaaa;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .search-form {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background-color: #252525;
+            color: white;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .search-input:focus {
+            border-color: #00adb5;
+        }
+        .search-button {
+            padding: 15px 25px;
+            font-size: 16px;
+            background-color: #00adb5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .search-button:hover {
+            background-color: #008f96;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>DGTH</h1>
+        <p>Dummies Guide to Hakuda — Quick Search Utility</p>
+        
+        <!-- This form bypasses the broken Google dashboard and sends searches straight to Google -->
+        <form action="https://google.com" method="GET" target="_blank" class="search-form">
+            <input type="text" name="q" class="search-input" placeholder="Search Google completely unfiltered..." required autocomplete="off">
+            <button type="submit" class="search-button">Search</button>
+        </form>
+    </div>
+
+</body>
+</html>
