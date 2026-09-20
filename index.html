@@ -12,15 +12,15 @@
             background-color: #121212;
             color: #ffffff;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            height: 100vh;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding-top: 40px;
+            box-sizing: border-box;
         }
-        .container {
+        .workspace {
             width: 90%;
-            max-width: 600px;
-            text-align: center;
+            max-width: 800px;
             background-color: #1e1e1e;
             padding: 30px;
             border-radius: 12px;
@@ -28,26 +28,26 @@
         }
         h1 {
             color: #00adb5;
-            margin-bottom: 5px;
-            font-size: 2.5rem;
-            letter-spacing: 2px;
+            margin: 0 0 5px 0;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
         }
-        p {
+        .subtitle {
             color: #aaaaaa;
             font-size: 14px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
-        .search-form {
+        .search-area {
             display: flex;
             gap: 10px;
-            width: 100%;
+            margin-bottom: 25px;
         }
         .search-input {
             flex: 1;
-            padding: 15px 20px;
+            padding: 12px 18px;
             font-size: 16px;
             border: 2px solid #333;
-            border-radius: 8px;
+            border-radius: 6px;
             background-color: #252525;
             color: white;
             outline: none;
@@ -57,12 +57,12 @@
             border-color: #00adb5;
         }
         .search-button {
-            padding: 15px 25px;
+            padding: 12px 24px;
             font-size: 16px;
             background-color: #00adb5;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             transition: background-color 0.3s;
@@ -70,20 +70,119 @@
         .search-button:hover {
             background-color: #008f96;
         }
+        .results-box {
+            background-color: #161616;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #2d2d2d;
+            min-height: 150px;
+        }
+        .result-item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .result-title {
+            font-size: 18px;
+            color: #00adb5;
+            margin: 0 0 5px 0;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .result-snippet {
+            font-size: 14px;
+            color: #cccccc;
+            line-height: 1.5;
+            margin: 0;
+        }
+        .status-msg {
+            color: #888888;
+            font-style: italic;
+            text-align: center;
+            margin-top: 50px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="workspace">
         <h1>DGTH</h1>
-        <p>Dummies Guide to Hakuda — Quick Search Utility</p>
+        <div class="subtitle">Internal Reference Dashboard & Search Engine</div>
         
-        <!-- This form bypasses the broken Google dashboard and sends searches straight to Google -->
-        <form action="https://google.com" method="GET" target="_blank" class="search-form">
-            <input type="text" name="q" class="search-input" placeholder="Search Google completely unfiltered..." required autocomplete="off">
-            <button type="submit" class="search-button">Search</button>
-        </form>
+        <div class="search-area">
+            <input type="text" id="queryInput" class="search-input" placeholder="Type a topic to query information..." autocomplete="off">
+            <button onclick="executeFetchSearch()" class="search-button">Fetch</button>
+        </div>
+
+        <div id="resultsContainer" class="results-box">
+            <p class="status-msg">Results container empty. Enter a query above to fetch data into this tab.</p>
+        </div>
     </div>
+
+    <script>
+        // Intercepts the enter key inside the text field
+        document.getElementById('queryInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                executeFetchSearch();
+            }
+        });
+
+        function executeFetchSearch() {
+            const query = document.getElementById('queryInput').value.trim();
+            const container = document.getElementById('resultsContainer');
+            
+            if (!query) {
+                container.innerHTML = '<p class="status-msg" style="color: #ff5722;">Please enter a search term.</p>';
+                return;
+            }
+
+            container.innerHTML = '<p class="status-msg">Fetching data from endpoint... Please wait.</p>';
+
+            // Using the open Wikipedia sandbox endpoint to dynamically retrieve text data matching the term
+            const targetUrl = `https://wikipedia.org{encodeURIComponent(query)}`;
+
+            fetch(targetUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network tracking response failed to load properly.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const searchResults = data.query.search;
+                    container.innerHTML = ''; // Clear status message
+
+                    if (searchResults.length === 0) {
+                        container.innerHTML = '<p class="status-msg">No matching data returned for that query.</p>';
+                        return;
+                    }
+
+                    // Loop through data properties and write elements dynamically into the existing container
+                    searchResults.forEach(item => {
+                        const itemElement = document.createElement('div');
+                        itemElement.className = 'result-item';
+
+                        // Strip HTML tags out of snippets returned by the remote platform array
+                        const cleanSnippet = item.snippet.replace(/<\/?[^>]+(>|\$)/g, "");
+
+                        itemElement.innerHTML = `
+                            <div class="result-title">${item.title}</div>
+                            <p class="result-snippet">${cleanSnippet}...</p>
+                        `;
+                        container.appendChild(itemElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Fetch Error:', error);
+                    container.innerHTML = '<p class="status-msg" style="color: #ff5722;">An error occurred while fetching information. Please ensure connectivity profile status is active.</p>';
+                });
+        }
+    </script>
 
 </body>
 </html>
